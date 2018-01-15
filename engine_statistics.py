@@ -46,8 +46,8 @@ def logParse(fileName):
                 gVariable_engine.engineDynamicAccess += 1
                 m5 = re.search(",\suri=(.*),\sip=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}),", i)
                 try:
-                    m2 = m5.group(2)
-                    m3 = m5.group(1)
+                    m2 = m5.group(2)  #ip
+                    m3 = m5.group(1)  #uri
 
                     if m2 in gVariable_engine.engineIpAccess:
                         gVariable_engine.engineIpAccess[m2] += 1
@@ -76,6 +76,15 @@ def logParse(fileName):
             m4 = i.split("客户端IP:")[1].strip()
             gVariable_engine.engineHourReject[myTime] += 1
             gVariable_engine.engineRejectAccess += 1
+            try:
+                m7 = re.search("指纹:(.*),统计", i).group(1)
+                if m7 in gVariable_engine.engineDfpReject:
+                    gVariable_engine.engineDfpReject[m7] += 1
+                else:
+                    gVariable_engine.engineDfpReject[m7] = 1
+            except AttributeError:
+                pass
+
             m1 = re.search("触发的规则:(.*),规则分值", i).group(1).split("|")
             for j in m1:
                 if j in gVariable_engine.engineRule:
@@ -87,22 +96,23 @@ def logParse(fileName):
                 gVariable_engine.engineHourDynamic[myTime] += 1
                 gVariable_engine.engineDynamicAccess += 1
                 gVariable_engine.engineBlackAccess += 1
+                if m4 in gVariable_engine.engineIpReject:
+                    gVariable_engine.engineIpAccess[m4] += 1
+                else:
+                    gVariable_engine.engineIpAccess[m4] = 1
+                try:
+                    m7 = re.search("指纹:(.*),统计", i).group(1)
+                    if m7 in gVariable_engine.engineDfpAccess:
+                        gVariable_engine.engineDfpAccess[m7] += 1
+                    else:
+                        gVariable_engine.engineDfpAccess[m7] = 1
+                except AttributeError:
+                    pass
 
             if m4 in gVariable_engine.engineIpReject:
                 gVariable_engine.engineIpReject[m4] += 1
-                gVariable_engine.engineIpAccess[m4] += 1
             else:
                 gVariable_engine.engineIpReject[m4] = 1
-                gVariable_engine.engineIpAccess[m4] = 1
-
-            try:
-                m7 = re.search("指纹:(.*),统计", i).group(1)
-                if m7 in gVariable_engine.engineDfpReject:
-                    gVariable_engine.engineDfpReject[m7] += 1
-                else:
-                    gVariable_engine.engineDfpReject[m7] = 1
-            except AttributeError:
-                pass
 
 def run():
     logFiles = getFileName()
@@ -119,7 +129,8 @@ def run():
 
     print "\n********************************************************************"
     print "total:%-10d  static:%-10d  dynamic:%-10d  reject:%d" % \
-          (gVariable_engine.engineTotalAccess, gVariable_engine.engineStaticAccess, gVariable_engine.engineDynamicAccess, gVariable_engine.engineRejectAccess)
+          (gVariable_engine.engineTotalAccess, gVariable_engine.engineStaticAccess, gVariable_engine.engineDynamicAccess,
+           gVariable_engine.engineRejectAccess)
 
     print "blacklist:%-10d  iptotal:%-10d  rejectratio:%.2f%%" % \
           (gVariable_engine.engineBlackAccess, gVariable_engine.engineIpTotal, gVariable_engine.engineRejectRatio)
